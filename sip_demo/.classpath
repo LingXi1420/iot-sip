@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="target/classes" path="src/main/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="src/main/java/lib/commons-beanutils-1.8.0.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/commons-codec-1.6.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/commons-collections-3.1.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/commons-dbcp.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/commons-fileupload-1.2.2.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/commons-httpclient-3.0.1.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/commons-io-2.0.1.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/commons-lang-2.4.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/commons-lang3-3.1.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/commons-pool.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/ezmorph-1.0.3.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/fastjson-1.2.2.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/hcicloud-3.7.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/httpclient-4.0-beta2.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/httpcore-4.1-alpha1.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/jdom.jar"/>
+	<classpathentry kind="lib" path="src/main/java/lib/xmlsec-1.4.4.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>
