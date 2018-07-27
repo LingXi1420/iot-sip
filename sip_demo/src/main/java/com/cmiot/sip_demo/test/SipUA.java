@@ -47,9 +47,9 @@ public class SipUA implements SipListener {
 	FromHeader fromHeader = null;
 	ToHeader toHeader = null;
 
-	int sipPort = 8080;
-	String remoteIP = "10.0.4.15";
-	String registrarIP = "10.0.4.20";
+	int sipPort = 5060;
+	String remoteIP = "10.100.56.118";
+	String registrarIP = "10.100.57.139";
 
 	// Variables to establish a JMF Session
 	RTPManager rtpManager = null;
@@ -81,7 +81,7 @@ public class SipUA implements SipListener {
 			localHost = InetAddress.getLocalHost().getHostAddress();
 
 			// Set Properties for sipStack
-			stackProps.put("javax.sip.IP_ADDRESS", localHost);
+			stackProps.put("javax.sip.IP_ADDRESS", "10.100.57.139");
 			stackProps.put("javax.sip.STACK_NAME", "Reference Implementation SIP stack");
 
 			// Create SipStack object

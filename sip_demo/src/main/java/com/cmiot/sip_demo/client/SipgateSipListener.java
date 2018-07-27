@@ -11,6 +11,7 @@ import java.util.ListIterator;
 import java.util.Properties;
 import java.util.Random;
 
+import javax.media.rtp.RTPManager;
 import javax.sip.ClientTransaction;
 import javax.sip.Dialog;
 import javax.sip.DialogState;
@@ -49,9 +50,13 @@ import javax.sip.message.Response;
 import org.apache.log4j.Logger;
 
 import com.cmiot.sip_demo.rtp.InitSession;
+//import com.cmiot.sip_demo.rtp.InitSession;
+import com.cmiot.sip_demo.test.JMFSession;
 
 import gov.nist.javax.sip.ListeningPointImpl;
 import gov.nist.javax.sip.SipProviderImpl;
+import gov.nist.javax.sip.stack.SIPDialog;
+
 
 public class SipgateSipListener implements SipListener
 {
@@ -61,6 +66,8 @@ public class SipgateSipListener implements SipListener
 	private AddressFactory addressFactory;
 	private MessageFactory messageFactory;
 	private Dialog dialog;
+	
+	RTPManager rtpManager = RTPManager.newInstance();
 	
 	private ListeningPoint lp;
 	private ServerTransaction inviteTid;
@@ -93,15 +100,15 @@ public class SipgateSipListener implements SipListener
 		headerFactory = sipFactory.createHeaderFactory();
 		addressFactory = sipFactory.createAddressFactory();
 		messageFactory = sipFactory.createMessageFactory();
-		log.info("#####################sip log: listenin " + "host:" + Property.fromHost + " port:" + Property.fromPort);
+		log.debug("#####################sip log: listenin " + "host:" + Property.fromHost + " port:" + Property.fromPort);
 		lp = sipStack.createListeningPoint(Property.fromHost, Property.fromPort, ListeningPoint.UDP);
 
 		SipgateSipListener listener = this;
 		ListeningPointImpl lpl = (ListeningPointImpl)lp;
 		SipProviderImpl providerImpl = lpl.getProvider();
-		log.info("#####################sip log: providerImpl " + providerImpl);
+		log.debug("#####################sip log: providerImpl " + providerImpl);
 		if (providerImpl != null && providerImpl.getListeningPoint() != null) {
-			log.info("#####################sip log:  SipProviderImpl host:"
+			log.debug("#####################sip log:  SipProviderImpl host:"
 					+ providerImpl.getListeningPoint().getIPAddress()
 					+ " port:" + providerImpl.getListeningPoint().getPort());
 		}
@@ -192,8 +199,10 @@ public class SipgateSipListener implements SipListener
 					+ "c=IN IP4  "+ Property.publicHost +"\r\n"
 					+ "t=0 0\r\n"
 					//媒体级会话的开始
-					+ "m=audio "+ Property.rtpPort + " RTP/AVP 8\r\n"		//1.m=是媒体级会话的开始处，audio：媒体类型 ； 6022：端口号    ；RTP/AVP：传输协议   ；0：rtp头中的payload格式
+					+ "m=audio "+ Property.rtpPort + " RTP/AVP 8 101\r\n"		//1.m=是媒体级会话的开始处，audio：媒体类型 ； 6022：端口号    ；RTP/AVP：传输协议   ；0：rtp头中的payload格式
 					+ "a=rtpmap:8 pcma/8000/1\r\n"
+					+ "a=rtpmap:101 telephone-event/8000\r\n"
+					+ "a=sendrecv\r\n"
 					+ "a=ptime:20\r\n";
 			byte[] contents = sdpData.getBytes();
 
@@ -225,10 +234,11 @@ public class SipgateSipListener implements SipListener
 			}*/
 
 			// send the request out.
+			log.info("send:===\n"+inviteTid.getRequest().toString());
 			inviteTid.sendRequest();
 
 			dialog = inviteTid.getDialog();
-
+			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -237,6 +247,7 @@ public class SipgateSipListener implements SipListener
 	public void processRequest(RequestEvent requestReceivedEvent)
 	{
 		try {
+			log.info("processRequest:==\n"+ requestReceivedEvent.getRequest().toString());
 			requestProcessor.process(requestReceivedEvent, dialog);
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -247,10 +258,10 @@ public class SipgateSipListener implements SipListener
 	{	
 		log.debug("Got a response. Code: " + responseReceivedEvent.getResponse().getStatusCode() + " / CSeq: "
 				+ responseReceivedEvent.getResponse().getHeader(CSeqHeader.NAME));
-		
+		log.info("processResponse:==\n"+responseReceivedEvent.getResponse().toString());
 		Response response = (Response) responseReceivedEvent.getResponse();
 		CSeqHeader cseq = (CSeqHeader) response.getHeader(CSeqHeader.NAME);
-
+		
 		log.debug("Response received : Status Code = " + response.getStatusCode() + " " + cseq);
 
 		if (response.getStatusCode() == Response.UNAUTHORIZED
@@ -266,12 +277,14 @@ public class SipgateSipListener implements SipListener
 				if (cseq.getMethod().equals(Request.INVITE))
 				{
 					Request ackRequest = dialog.createAck(cseq.getSeqNumber());
-					log.debug("Sending ACK");
+					String Via = ackRequest.getHeader("Via").toString();
+					log.debug("Sending ACK, Via:"+ Via);
 					dialog.sendAck(ackRequest);
 					String toHost = this.getIPAddress(dialog.getRemoteTarget().toString());
 					String responseStr= response.toString();
 					int startIndex = responseStr.indexOf("m=audio");
-					int endIndex = responseStr.indexOf("a=recvonly");
+					int endIndex = responseStr.indexOf("a=rtpmap");
+//					int endIndex = responseStr.indexOf("c=IN");
 					//Iterator parameterNames = response.getContentDisposition().getParameterNames();
 					//log.info("content disposition start:");
 					/*while (parameterNames.hasNext()) {
@@ -280,12 +293,16 @@ public class SipgateSipListener implements SipListener
 					}*/
 					//log.info("content disposition end");
 					
-					log.info(responseStr.substring(startIndex, endIndex));
+					log.debug(responseStr.substring(startIndex, endIndex));
 					String[] mInfo = responseStr.substring(startIndex, endIndex).split(" ");
-					log.info(mInfo[1]);
+					log.debug(mInfo[1]);
 					int toPort = Integer.parseInt(mInfo[1]);
+					
+//					new JMFSession(rtpManager, toHost, Property.rtpPort, toPort);
+					
 					InitSession rtpSession= new InitSession(toHost, toPort);
 					rtpSession.sendData();
+					
 					sendBye();
 				} else if (cseq.getMethod().equals(Request.CANCEL)) {
                     if (dialog.getState() == DialogState.CONFIRMED) {
@@ -331,10 +348,14 @@ public class SipgateSipListener implements SipListener
 	public String getIPAddress(String sipAddress) {
 		String ipAddress = null;
 		int start, end;
-		start = sipAddress.indexOf('@') + 1;
+		if(sipAddress.contains("@")) {
+			start = sipAddress.indexOf('@') + 1;
+		}else {
+			start = sipAddress.indexOf(':') + 1;
+		}
 		end = sipAddress.lastIndexOf(':');
 		ipAddress = sipAddress.substring(start, end);
-		System.out.println("IP Extracted as: " + ipAddress);
+//		System.out.println("IP Extracted as: " + ipAddress);
 		return ipAddress;
 	}
 

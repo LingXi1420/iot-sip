@@ -43,9 +43,8 @@ public class RequestProcessor
         Request request = requestReceivedEvent.getRequest();
         ServerTransaction serverTransactionId = requestReceivedEvent.getServerTransaction();
 
-        log.debug("Request " + request.getMethod() + " received"
+        log.info("Request " + request.getMethod() + " received"
                 + " with server transaction id " + serverTransactionId);
-
         if (request.getMethod().equals(Request.BYE))
             processBye(request, serverTransactionId);
         else if (request.getMethod().equals(Request.INVITE))

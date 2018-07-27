@@ -48,7 +48,7 @@ public class InitSession implements RTPAppIntf{
     }
     
     public void sendData(){
-    	byte[] data = getBytes("/home/sip/" + "TTS.pcm");
+    	byte[] data = getBytes("C:\\Users\\Harold\\Desktop\\t.pcm");
     	List<byte[]> g711aBytes = getGroupBytes(data);
     	int seqNum = new Random().nextInt(100000);
     	long rtpTimestamp = System.currentTimeMillis();

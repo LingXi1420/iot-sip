@@ -7,7 +7,7 @@ import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.io.IOUtils;
 
-import sun.org.mozilla.javascript.internal.ast.Block;
+//import sun.org.mozilla.javascript.internal.ast.Block;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,7 +33,7 @@ public class TTSUtil {
 
     private BlockingQueue<byte[]> queue = new ArrayBlockingQueue(20);
     
-    public static BlockingQueue<Integer> integers = new ArrayBlockingQueue<>(5);
+    public static BlockingQueue<Integer> integers = new ArrayBlockingQueue<Integer>(5);
     
     
     private TTSUtil() {

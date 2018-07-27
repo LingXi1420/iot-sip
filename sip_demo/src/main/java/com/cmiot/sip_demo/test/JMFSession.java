@@ -32,18 +32,18 @@ import javax.media.format.VideoFormat;
 import javax.media.Format;
 import javax.media.format.FormatChangeEvent;
 
-class  JMFSession
+public class  JMFSession
 {
-/*	public static void main(String[] args) 
+	public static void main(String[] args) 
 	{
 		RTPManager rtpManager = null;
-		String remoteParty = "10.0.4.15";
+		String remoteParty = "10.100.56.118";
 		int localPort = 9090;
-		int remotePort = 9595;
+		int remotePort = 6028;
 		rtpManager = RTPManager.newInstance();
 
 		new JMFSession(rtpManager, remoteParty, localPort, remotePort);
-	}*/
+	}
 
 	public JMFSession(RTPManager rtpM, String remoteIP, int localPort, int remotePort)
 	{
@@ -53,19 +53,20 @@ class  JMFSession
 		{
 			if (rtpM != null)
 			{
-				System.out.println("RtpM is not null; " + "remoteIP = " + remoteIP + "; LocalPort = " + localPort +
-									"; remotePort = " + remotePort );
+//				System.out.println("RtpM is not null; " + "remoteIP = " + remoteIP + "; LocalPort = " + localPort +
+//									"; remotePort = " + remotePort );
 			}
 			remoteAddr = InetAddress.getByName( remoteIP ) ;
-			localAddress = new SessionAddress( InetAddress.getLocalHost(), localPort ) ;
+//			localAddress = new SessionAddress( InetAddress.getLocalHost(), localPort ) ;
 			remoteAddress = new SessionAddress( remoteAddr, remotePort ) ;
-			System.out.println("Session Addresses created!!!");
+			localAddress = new SessionAddress( InetAddress.getByName( "10.100.57.139" ), localPort ) ;
+//			System.out.println("Session Addresses created!!!");
 
 			// Now Initialze the Manager and then add the target to the RTP Manager
 			rtpM.initialize(localAddress) ;
-			System.out.println("RTPM initialized !!!");
+//			System.out.println("RTPM initialized !!!");
 			rtpM.addTarget(remoteAddress) ;
-			System.out.println( "RTP Session created between : " + localAddress + " and " + remoteAddress ) ;
+//			System.out.println( "RTP Session created between : " + localAddress + " and " + remoteAddress ) ;
 
 			//Create a Session ie., an RTP Stream Sender and an RTP Stream Receiver/Player
 			new RTPServer(rtpM);	
@@ -100,24 +101,24 @@ class RTPServer{
 
 	public void initJMFSession(){
 		//定位所需要用的捕获设备
-		deviceList = CaptureDeviceManager.getDeviceList(new AudioFormat("linear", 44100, 16, 2));
-		System.out.println("Device list is of size: " + Integer.toString(deviceList.size()));
+		deviceList = CaptureDeviceManager.getDeviceList(new AudioFormat(AudioFormat.LINEAR, 44100, 16, 2));
+//		System.out.println("Device list is of size: " + Integer.toString(deviceList.size()));
 		di = (CaptureDeviceInfo) deviceList.firstElement();
 		//获取捕获设备的位置Medialocator
 		mediaLocator =  di.getLocator();
-		System.out.println("Media is: " + mediaLocator.toString());
+//		System.out.println("Media is: " + mediaLocator.toString());
 		
 		boolean processorOK = false ;
 		boolean configureOK = false ; 
 
 		processorOK = createProcessor() ;
-		System.out.println( "processor OK ?  " + processorOK ) ;
+//		System.out.println( "processor OK ?  " + processorOK ) ;
 		if( processorOK )
 			configureOK = createSend() ;
-		System.out.println( "configure OK ? " + configureOK ) ;
+//		System.out.println( "configure OK ? " + configureOK ) ;
 		if( configureOK ){
 			processor.start() ;
-			System.out.println( "Processor starting..." ) ;
+//			System.out.println( "Processor starting..." ) ;
 		}
 	}
 			// Method to create a Processor and do error checking
@@ -127,7 +128,7 @@ class RTPServer{
 		try {
 			//利用捕获设备位置创建数据源
 			dataSource = javax.media.Manager.createDataSource( mediaLocator ) ;
-			System.out.println( "DataSource created for Device" ) ;
+//			System.out.println( "DataSource created for Device" ) ;
 		} catch ( Exception e ) {
 			System.out.println( "Error: Couldn't create Datasource" ) ;
 			System.exit( -1 ) ;
@@ -138,7 +139,7 @@ class RTPServer{
 		{
 			//如果想把捕获的数据发送到网络或者保存起来，就需要创建处理器Processor
 			processor = javax.media.Manager.createProcessor( dataSource ) ;
-			System.out.println( "Processor created" ) ;
+//			System.out.println( "Processor created" ) ;
 		} catch ( NoProcessorException p ) {
 			System.out.println( "Error: Couldn't create processor" ) ;
 			System.exit( -1 ) ;
