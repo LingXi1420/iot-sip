@@ -342,10 +342,10 @@ public class Pcma
     }
     
     public static void main(String[] args) {
-    	byte[] d = InitSession.getBytes("E:\\tts_test.pcm");
+    	byte[] d = InitSession.getBytes("C:\\Users\\Harold\\Desktop\\t.pcm");
     	byte[] target = new byte[d.length/2];
 		aLawEncode(false, d, 0, d.length, target);
-		File file = new File("E:\\tts_test.g711");
+		File file = new File("C:\\Users\\Harold\\Desktop\\t.g711");
 		FileOutputStream outputStream = null;
 		try {
 			outputStream = new FileOutputStream(file);

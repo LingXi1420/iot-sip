@@ -6,16 +6,20 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-
 import org.apache.log4j.Logger;
 
 import com.cmiot.sip_demo.client.Property;
+import com.cmiot.sip_demo.g711.CMG711;
+import com.cmiot.sip_demo.g711.G711A;
 import com.cmiot.sip_demo.g711.PCMA;
 
 import jlibrtp.DataFrame;
@@ -34,23 +38,60 @@ public class InitSession implements RTPAppIntf{
         DatagramSocket rtpSocket = null;  
         DatagramSocket rtcpSocket = null;  
         
-        try {  
-            rtpSocket = new DatagramSocket(Property.rtpPort);  
-            rtcpSocket = new DatagramSocket(Property.rtpPort + 1);  
+        try {
+        	InetAddress addr = InetAddress.getByName(Property.fromHost);
+            rtpSocket = new DatagramSocket(Property.rtpPort, addr);  
+            rtcpSocket = new DatagramSocket(Property.rtpPort + 1, addr);  
         } catch (Exception e) {
         	log.error(e.getMessage());
         }  
           
+        Participant p = new Participant(toHost, toPort, toPort+1);
         rtpSession = new RTPSession(rtpSocket, rtcpSocket);
         rtpSession.RTPSessionRegister(this,null,null);
-        Participant p = new Participant(toHost, toPort, 0);
+        
+//        p.debugPrint();
         rtpSession.addParticipant(p);
     }
     
-    public void sendData(){
-    	byte[] data = getBytes("C:\\Users\\Harold\\Desktop\\t.pcm");
-    	List<byte[]> g711aBytes = getGroupBytes(data);
+    public void sendData1(){
+    	byte[] g711aBytes = getBytes("C:\\Users\\Harold\\Desktop\\t2.au");
+    	
+    	List<byte[]> groupBytes = new ArrayList<byte[]>();
+		
+		int groupBytesSize = g711aBytes.length % MAX_RTP_PKT_LENGTH == 0 ? 
+				g711aBytes.length / MAX_RTP_PKT_LENGTH : (g711aBytes.length / MAX_RTP_PKT_LENGTH + 1);
+		
+		for(int index = 0; index < groupBytesSize; index ++){
+			byte[] groupByte = new byte[MAX_RTP_PKT_LENGTH];
+			groupBytes.add(groupByte);
+			for(int index1 = 0 ;index1 < MAX_RTP_PKT_LENGTH; index1++){
+				if (index * MAX_RTP_PKT_LENGTH + index1 < g711aBytes.length) {
+					groupByte[index1] = g711aBytes[index * MAX_RTP_PKT_LENGTH + index1];
+				}
+			}
+		}
+		
     	int seqNum = new Random().nextInt(100000);
+    	long rtpTimestamp = System.currentTimeMillis();
+    	for(byte[] g711aByte : groupBytes){
+    		rtpSession.payloadType(8);
+    		rtpSession.sendData(g711aByte, rtpTimestamp, seqNum);
+    		seqNum ++;
+    		rtpTimestamp += 160;
+//    		try {
+//				Thread.sleep(20);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+    	}
+    }
+    
+    public void sendData(){
+    	byte[] data = getBytes("C:\\Users\\Harold\\Desktop\\t1.au");
+    	List<byte[]> g711aBytes = getGroupBytes1(data);
+    	int seqNum = new Random().nextInt(100000);
+    	
     	long rtpTimestamp = System.currentTimeMillis();
     	for(byte[] g711aByte : g711aBytes){
     		rtpSession.payloadType(8);
@@ -65,6 +106,27 @@ public class InitSession implements RTPAppIntf{
     	}
     }
     
+    private static List<byte[]> getGroupBytes1(byte[] bytes){
+    	byte[] g711data = CMG711.encode(bytes);
+    	
+		List<byte[]> groupBytes = new ArrayList<byte[]>();
+		
+		int groupBytesSize = g711data.length % MAX_RTP_PKT_LENGTH == 0 ? 
+				g711data.length / MAX_RTP_PKT_LENGTH : (g711data.length / MAX_RTP_PKT_LENGTH + 1);
+		
+		for(int index = 0; index < groupBytesSize; index ++){
+			byte[] groupByte = new byte[MAX_RTP_PKT_LENGTH];
+			groupBytes.add(groupByte);
+			
+			for(int index1 = 0 ;index1 < MAX_RTP_PKT_LENGTH; index1++){
+				if (index * MAX_RTP_PKT_LENGTH + index1 < g711data.length) {
+					groupByte[index1] = g711data[index * MAX_RTP_PKT_LENGTH + index1];
+				}
+			}
+		}
+		
+		return groupBytes;
+	}
     
     /** 
      * 注释：字节数组到short的转换！ 
@@ -82,7 +144,7 @@ public class InitSession implements RTPAppIntf{
     }
     
     private static List<byte[]> getGroupBytes(byte[] bytes){
-		List<byte[]> groupBytes = new ArrayList<>();
+		List<byte[]> groupBytes = new ArrayList<byte[]>();
 		int groupBytesSize = bytes.length % MAX_RTP_PKT_LENGTH == 0 ? 
 				bytes.length / MAX_RTP_PKT_LENGTH : (bytes.length / MAX_RTP_PKT_LENGTH + 1);
 		for(int index = 0; index < groupBytesSize; index ++){
@@ -95,23 +157,28 @@ public class InitSession implements RTPAppIntf{
 			}
 		}
 		
-		/*List<byte[]> g711aData = new ArrayList<>();
+		List<byte[]> g711aData = new ArrayList<>();
 		for(byte[] groupByte : groupBytes){
-			short[] groupShort = new short[groupByte.length / 2];
-			int shortIndex = 0;
-			for(int index = 1; index < groupByte.length; index += 2){
-				byte[] _bytes = new byte[2];
-				_bytes[0] = groupByte[index - 1];
-				_bytes[1] = groupByte[index];
-				groupShort[shortIndex] = byteToShort(_bytes);
-				shortIndex ++;
-			}
 			
-			byte[] alaw = new byte[groupShort.length];
-			PCMA.linear2alaw(groupShort, 0, alaw, groupShort.length);
-			g711aData.add(alaw);
-		}*/
-		return groupBytes;
+			byte[] g711data = new byte[160];
+			int g711size = G711A.encode(groupByte, 0, groupByte.length, g711data);
+			g711aData.add(g711data);
+			
+//			short[] groupShort = new short[groupByte.length / 2];
+//			int shortIndex = 0;
+//			for(int index = 1; index < groupByte.length; index += 2){
+//				byte[] _bytes = new byte[2];
+//				_bytes[0] = groupByte[index - 1];
+//				_bytes[1] = groupByte[index];
+//				groupShort[shortIndex] = byteToShort(_bytes);
+//				shortIndex ++;
+//			}
+//			
+//			byte[] alaw = new byte[groupShort.length];
+//			PCMA.linear2alaw(groupShort, 0, alaw, groupShort.length);
+//			g711aData.add(alaw);
+		}
+		return g711aData;
 	}
     
     public static byte[] getBytes(String filePath) {
@@ -151,13 +218,25 @@ public class InitSession implements RTPAppIntf{
 		return buffer;
 	}
 
-	@Override
+    @Override
 	public void receiveData(DataFrame frame, Participant participant) {
-		String s = new String(frame.getConcatenatedData());  
-        System.out.println("���յ����: "+s+" , ������CNAME�� "  
-                +participant.getCNAME()+"ͬ��Դ��ʶ��("+participant.getSSRC()+")");  
+		// TODO Auto-generated method stub
+    	try {
+//			FileUtils.writeByteArrayToFile(new File("C:\\Users\\Harold\\Desktop\\t1.pcm"), frame.getConcatenatedData());
+			Path filePath = Paths.get("C:\\Users\\Harold\\Desktop\\t3.au");
+			if (!Files.exists(filePath)) {
+			    Files.createFile(filePath);
+			}
+			Files.write(filePath, frame.getConcatenatedData(), StandardOpenOption.APPEND);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+//		String s = new String(frame.getConcatenatedData());
+//		System.out.println("received:"+s + " from:"+participant.getCNAME()+" ssrc:"+participant.getSSRC());
+    	
 	}
-
+    
 	@Override
 	public void userEvent(int type, Participant[] participant) {
 		// TODO Auto-generated method stub

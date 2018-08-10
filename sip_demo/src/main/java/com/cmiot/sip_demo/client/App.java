@@ -1,7 +1,5 @@
 package com.cmiot.sip_demo.client;
 
-import com.cmiot.sip_demo.test.TTSUtil;
-
 public class App
 {
 

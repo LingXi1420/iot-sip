@@ -50,6 +50,7 @@ import javax.sip.message.Response;
 import org.apache.log4j.Logger;
 
 import com.cmiot.sip_demo.rtp.InitSession;
+import com.cmiot.sip_demo.test.InitSessionTest;
 //import com.cmiot.sip_demo.rtp.InitSession;
 import com.cmiot.sip_demo.test.JMFSession;
 
@@ -280,6 +281,7 @@ public class SipgateSipListener implements SipListener
 					String Via = ackRequest.getHeader("Via").toString();
 					log.debug("Sending ACK, Via:"+ Via);
 					dialog.sendAck(ackRequest);
+					log.info("Sending ACK:===\n"+ ackRequest.toString());
 					String toHost = this.getIPAddress(dialog.getRemoteTarget().toString());
 					String responseStr= response.toString();
 					int startIndex = responseStr.indexOf("m=audio");
@@ -298,10 +300,12 @@ public class SipgateSipListener implements SipListener
 					log.debug(mInfo[1]);
 					int toPort = Integer.parseInt(mInfo[1]);
 					
+					InitSession rtpSession= new InitSession(toHost, toPort);
+					rtpSession.sendData1();
+//					InitSessionTest rtpSession= new InitSessionTest(Property.rtpPort, Property.rtpPort+1, toPort, toPort+1, toHost);
+					
 //					new JMFSession(rtpManager, toHost, Property.rtpPort, toPort);
 					
-					InitSession rtpSession= new InitSession(toHost, toPort);
-					rtpSession.sendData();
 					
 					sendBye();
 				} else if (cseq.getMethod().equals(Request.CANCEL)) {

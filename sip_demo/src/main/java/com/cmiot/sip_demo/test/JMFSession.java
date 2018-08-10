@@ -57,8 +57,8 @@ public class  JMFSession
 //									"; remotePort = " + remotePort );
 			}
 			remoteAddr = InetAddress.getByName( remoteIP ) ;
-//			localAddress = new SessionAddress( InetAddress.getLocalHost(), localPort ) ;
 			remoteAddress = new SessionAddress( remoteAddr, remotePort ) ;
+//			localAddress = new SessionAddress( InetAddress.getLocalHost(), localPort ) ;
 			localAddress = new SessionAddress( InetAddress.getByName( "10.100.57.139" ), localPort ) ;
 //			System.out.println("Session Addresses created!!!");
 
